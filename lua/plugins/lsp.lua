@@ -3,58 +3,76 @@ return {
   {
     "neovim/nvim-lspconfig", -- Core LSP client configs
     dependencies = {
-      { "williamboman/mason.nvim", config = true }, -- LSP/DAP/Linter installer
+      "williamboman/mason.nvim", -- LSP/DAP/Linter installer
       "williamboman/mason-lspconfig.nvim", -- Bridge Mason ↔ lspconfig
     },
-    config = function()
-      local lspconfig = require("lspconfig")
-      local mason_lspconfig = require("mason-lspconfig")
-
-      -- Auto-install these servers
-      mason_lspconfig.setup({
-        ensure_installed = {
-          "lua_ls", -- Lua
-          "pyright", -- Python
-          "clangd", -- C/C++
-          "rust_analyzer", -- Rust
+    opts = {
+      diagnostics = { virtual_text = { prefix = "icons" } },
+      capabilities = {
+        workspace = {
+          didChangeWatchedFiles = {
+            dynamicRegistration = false,
+          },
         },
-      })
-
-      -- Default attach function (keymaps etc.)
-      local on_attach = function(_, bufnr)
-        local opts = { noremap = true, silent = true, buffer = bufnr }
-        vim.keymap.set("n", "gd", vim.lsp.buf.definition, opts)
-        vim.keymap.set("n", "K", vim.lsp.buf.hover, opts)
-        vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename, opts)
-        vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, opts)
-      end
-
-      -- LSP settings per server
-      local servers = {
+      },
+      servers = {
         lua_ls = {
+          -- cmd = { "/home/folke/projects/lua-language-server/bin/lua-language-server" },
+          -- single_file_support = true,
           settings = {
             Lua = {
-              diagnostics = { globals = { "vim" } },
-              workspace = { checkThirdParty = false },
+              misc = {
+                -- parameters = { "--loglevel=trace" },
+              },
+              hover = { expandAlias = false },
+              type = {
+                castNumberToInteger = true,
+                inferParamType = true,
+              },
+              diagnostics = {
+                disable = { "incomplete-signature-doc", "trailing-space" },
+                -- enable = false,
+                groupSeverity = {
+                  strong = "Warning",
+                  strict = "Warning",
+                },
+                groupFileStatus = {
+                  ["ambiguity"] = "Opened",
+                  ["await"] = "Opened",
+                  ["codestyle"] = "None",
+                  ["duplicate"] = "Opened",
+                  ["global"] = "Opened",
+                  ["luadoc"] = "Opened",
+                  ["redefined"] = "Opened",
+                  ["strict"] = "Opened",
+                  ["strong"] = "Opened",
+                  ["type-check"] = "Opened",
+                  ["unbalanced"] = "Opened",
+                  ["unused"] = "Opened",
+                },
+                unusedLocalExclude = { "_*" },
+              },
             },
           },
         },
-        pyright = {},
-        clangd = {},
-        rust_analyzer = {},
-      }
+      },
+    },
+  },
 
-      -- Setup handlers for each server
-      mason_lspconfig.setup_handlers({
-        function(server_name)
-          lspconfig[server_name].setup({
-            on_attach = on_attach,
-            capabilities = require("cmp_nvim_lsp").default_capabilities(),
-            settings = servers[server_name],
-          })
-        end,
-      })
-    end,
+  {
+    "mason-org/mason-lspconfig.nvim",
+    opts = {
+      ensure_installed = {
+        "lua_ls", -- Lua
+        "pyright", -- Python
+        "clangd", -- C/C++
+        "rust_analyzer", -- Rust
+      },
+    },
+    dependencies = {
+      { "mason-org/mason.nvim", opts = {} },
+      "neovim/nvim-lspconfig",
+    },
   },
 
   -- Lightweight yet powerful formatter plugin for Neovim

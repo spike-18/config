@@ -1,5 +1,5 @@
 return {
-  -- provides a buffer line with various styling options, including slanted and sloped tabs 
+  -- provides a buffer line with various styling options, including slanted and sloped tabs
   { "akinsho/bufferline.nvim", opts = { options = { separator_style = "slope" } } },
 
   -- which-key.nvim displays a popup with key binding suggestions as you type a command

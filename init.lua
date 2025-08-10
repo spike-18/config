@@ -30,11 +30,6 @@ vim.print = _G.dd
 pcall(require, "config.env")
 
 -- load lazy.nvim plugin manager
-require("config.lazy").load({
-  profiling = {
-    loader = false,
-    require = true,
-  },
-})
+require("config.lazy")
 
 
