@@ -1,35 +1,39 @@
--- Main nvim configuration file. 
+vim.g.base46_cache = vim.fn.stdpath "data" .. "/base46/"
+vim.g.mapleader = " "
 
--- detect if nvim is ran from VSCode
-if vim.env.VSCODE then
-  vim.g.vscode = true
+-- bootstrap lazy and all plugins
+local lazypath = vim.fn.stdpath "data" .. "/lazy/lazy.nvim"
+
+if not vim.uv.fs_stat(lazypath) then
+  local repo = "https://github.com/folke/lazy.nvim.git"
+  vim.fn.system { "git", "clone", "--filter=blob:none", repo, "--branch=stable", lazypath }
 end
 
--- enable faster lua module loading
-if vim.loader then
-  vim.loader.enable()
-end
+vim.opt.rtp:prepend(lazypath)
+
+local lazy_config = require "configs.lazy"
+
+-- load plugins
+require("lazy").setup({
+  {
+    "NvChad/NvChad",
+    lazy = false,
+    branch = "v2.5",
+    import = "nvchad.plugins",
+  },
+
+  { import = "plugins" },
+}, lazy_config)
+
+-- load theme
+dofile(vim.g.base46_cache .. "defaults")
+dofile(vim.g.base46_cache .. "statusline")
+
+require "options"
+require "autocmds"
+require "custom.configs.autocmds"
 
 
--- define global debug helpers
-_G.dd = function(...)
-  require("snacks.debug").inspect(...)
-end
-
-_G.bt = function(...)
-  require("snacks.debug").backtrace()
-end
-
-_G.p = function(...)
-  require("snacks.debug").profile(...)
-end
-
-vim.print = _G.dd
-
--- load optional environment config
-pcall(require, "config.env")
-
--- load lazy.nvim plugin manager
-require("config.lazy")
-
-
+vim.schedule(function()
+  require "mappings"
+end)
